@@ -3,32 +3,30 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>高级图片管理工具 - 微信兼容版</title>
+  <title>通用图片管理工具</title>
   <style>
     :root {
-      --primary-color: #07C160; /* 微信风格绿色 */
-      --secondary-color: #576B95; /* 微信辅助色 */
-      --light-bg: #F7F7F7;
-      --dark-bg: #1A1A1A;
-      --text-color: #333333;
-      --border-color: #E6E6E6;
+      --primary-color: #007bff;
+      --secondary-color: #6c757d;
+      --light-bg: #f5f5f5;
+      --dark-bg: #343a40;
+      --text-color: #212529;
+      --border-color: #ddd;
     }
     
     body {
-      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+      font-family: Arial, sans-serif;
       padding: 15px;
       color: var(--text-color);
       line-height: 1.6;
-      max-width: 100%;
+      max-width: 1200px;
       margin: 0 auto;
-      background-color: var(--light-bg);
     }
     
     h2 {
       color: var(--primary-color);
       margin-bottom: 20px;
       text-align: center;
-      font-weight: 500;
     }
     
     .container {
@@ -41,45 +39,35 @@
     .config-box {
       background: white;
       padding: 15px;
-      border-radius: 12px;
+      border-radius: 8px;
       flex: 1;
       min-width: 300px;
-      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+      box-shadow: 0 1px 3px rgba(0,0,0,0.1);
     }
     
     textarea {
       width: 100%;
       height: 150px;
       margin: 10px 0;
-      padding: 12px;
+      padding: 10px;
       border: 1px solid var(--border-color);
-      border-radius: 8px;
+      border-radius: 4px;
       resize: vertical;
-      font-family: inherit;
-      font-size: 15px;
     }
     
     button {
-      padding: 12px 20px;
+      padding: 10px 15px;
       background: var(--primary-color);
       color: white;
       border: none;
-      border-radius: 8px;
+      border-radius: 4px;
       cursor: pointer;
-      font-size: 15px;
-      transition: all 0.2s;
       margin: 5px 0;
-      font-weight: 500;
-      width: 100%;
+      transition: background 0.2s;
     }
     
     button:hover {
-      background: #06AD56;
-      transform: translateY(-1px);
-    }
-    
-    button:active {
-      transform: translateY(0);
+      background: #0069d9;
     }
     
     button.secondary {
@@ -88,55 +76,40 @@
     
     #gallery {
       display: grid;
-      grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
-      gap: 12px;
+      grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+      gap: 15px;
       margin-top: 15px;
     }
     
     .img-card {
       border: 1px solid var(--border-color);
       padding: 10px;
-      position: relative;
-      cursor: pointer;
-      transition: all 0.2s;
-      border-radius: 8px;
+      border-radius: 6px;
       background: white;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-    
-    .img-card:hover {
-      transform: translateY(-2px);
-      box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+      position: relative;
     }
     
     .img-card.selected {
       border-color: var(--primary-color);
-      box-shadow: 0 0 0 2px rgba(7,193,96,0.2);
-    }
-    
-    .img-card.error {
-      border-color: #FA5151;
+      box-shadow: 0 0 0 2px rgba(0,123,255,0.2);
     }
     
     .img-card img {
       max-width: 100%;
       height: auto;
       display: block;
-      border-radius: 6px;
+      border-radius: 4px;
     }
     
     .checkbox {
       position: absolute;
       top: 5px;
       right: 5px;
-      width: 18px;
-      height: 18px;
-      cursor: pointer;
     }
     
     .size-info {
       font-size: 13px;
-      color: #888;
+      color: #666;
       margin-top: 8px;
       text-align: center;
     }
@@ -144,18 +117,11 @@
     .stats {
       margin: 15px 0;
       padding: 12px;
-      background: white;
-      border-radius: 8px;
+      background: var(--light-bg);
+      border-radius: 6px;
       display: flex;
       flex-wrap: wrap;
       gap: 15px;
-      box-shadow: 0 1px 2px rgba(0,0,0,0.05);
-    }
-    
-    .stats span {
-      font-weight: 500;
-      white-space: nowrap;
-      color: var(--text-color);
     }
     
     .loading-overlay {
@@ -165,7 +131,7 @@
       left: 0;
       width: 100%;
       height: 100%;
-      background: rgba(0,0,0,0.7);
+      background: rgba(0,0,0,0.5);
       z-index: 1000;
       justify-content: center;
       align-items: center;
@@ -173,111 +139,26 @@
       color: white;
     }
     
-    .progress-container {
+    .progress-bar {
       width: 80%;
-      max-width: 500px;
-      background: rgba(255,255,255,0.2);
-      border-radius: 10px;
-      margin: 20px 0 10px;
+      max-width: 400px;
+      height: 6px;
+      background: #ddd;
+      border-radius: 3px;
+      margin: 15px 0;
       overflow: hidden;
     }
     
-    .progress-bar {
-      height: 6px;
-      background: white;
-      border-radius: 10px;
+    .progress-fill {
+      height: 100%;
+      background: var(--primary-color);
       width: 0%;
       transition: width 0.3s;
     }
     
-    .drop-area {
-      border: 2px dashed var(--border-color);
-      padding: 25px;
-      text-align: center;
-      margin: 10px 0;
-      transition: all 0.3s;
-      border-radius: 8px;
-      background: rgba(255,255,255,0.5);
-    }
-    
-    .drop-area.highlight {
-      border-color: var(--primary-color);
-      background: rgba(7,193,96,0.05);
-    }
-    
-    .tab-container {
-      display: flex;
-      margin-bottom: 15px;
-      overflow-x: auto;
-      scrollbar-width: none;
-    }
-    
-    .tab-container::-webkit-scrollbar {
-      display: none;
-    }
-    
-    .tab {
-      padding: 10px 20px;
-      background: #EDEDED;
-      cursor: pointer;
-      border-radius: 8px;
-      margin-right: 8px;
-      white-space: nowrap;
-      transition: all 0.2s;
-      font-size: 15px;
-      color: #666;
-    }
-    
-    .tab.active {
-      background: var(--primary-color);
-      color: white;
-    }
-    
-    .tab-content {
-      display: none;
-    }
-    
-    .tab-content.active {
-      display: block;
-    }
-    
-    input[type="text"], input[type="number"] {
-      padding: 10px 12px;
-      border: 1px solid var(--border-color);
-      border-radius: 8px;
-      margin: 5px 0;
-      width: 80px;
-      font-size: 15px;
-    }
-    
-    label {
-      margin-right: 10px;
-      white-space: nowrap;
-      font-size: 15px;
-    }
-    
-    .actions {
-      display: grid;
-      grid-template-columns: repeat(2, 1fr);
-      gap: 10px;
-      margin-top: 15px;
-    }
-    
-    /* 移动端适配 */
     @media (max-width: 768px) {
-      body {
-        padding: 12px;
-      }
-      
       .container {
         flex-direction: column;
-        gap: 12px;
-      }
-      
-      .config-box {
-        width: 100%;
-        min-width: auto;
-        padding: 12px;
       }
       
       #gallery {
@@ -287,63 +168,12 @@
       .stats {
         flex-direction: column;
         gap: 8px;
-        padding: 10px;
-      }
-      
-      .tab {
-        padding: 8px 16px;
-        font-size: 14px;
-      }
-      
-      button {
-        padding: 10px;
-        font-size: 14px;
-      }
-    }
-    
-    /* 暗黑模式 */
-    @media (prefers-color-scheme: dark) {
-      :root {
-        --light-bg: #1A1A1A;
-        --text-color: #F0F0F0;
-        --border-color: #333;
-      }
-      
-      body {
-        background: #1A1A1A;
-      }
-      
-      .config-box, .img-card, .stats {
-        background: #222;
-      }
-      
-      textarea, input[type="text"], input[type="number"] {
-        background: #333;
-        color: white;
-        border-color: #444;
-      }
-      
-      .drop-area {
-        background: rgba(51, 51, 51, 0.5);
-      }
-      
-      .tab {
-        background: #333;
-        color: #CCC;
-      }
-      
-      .tab.active {
-        color: white;
-      }
-      
-      .size-info {
-        color: #AAA;
       }
     }
   </style>
 </head>
 <body>
-  <h2>高级图片管理工具</h2>
+  <h2>通用图片管理工具</h2>
   <div class="stats" id="stats">
     <span>总图片数: 0</span>
     <span>符合条件: 0</span>
@@ -352,48 +182,31 @@
 
   <div class="container">
     <div class="config-box">
-      <div class="tab-container">
-        <div class="tab active" onclick="switchTab('html-tab')">HTML输入</div>
-        <div class="tab" onclick="switchTab('url-tab')">URL输入</div>
-      </div>
-      
-      <div id="html-tab" class="tab-content active">
-        <div class="drop-area" id="dropArea">
-          <p>拖放HTML文件到这里或粘贴HTML代码</p>
-          <textarea id="htmlInput" placeholder="粘贴完整的HTML内容到这里..."></textarea>
-        </div>
-        <button onclick="loadImages()">解析图片</button>
-      </div>
-      
-      <div id="url-tab" class="tab-content">
-        <input type="text" id="urlInput" placeholder="输入网页URL (包括微信文章)" style="width: 100%; padding: 12px; margin: 10px 0; border-radius: 8px;">
-        <div class="actions">
-          <button onclick="fetchFromUrl()">获取网页内容</button>
-          <button class="secondary" onclick="testWechatUrl()">测试微信文章</button>
-        </div>
+      <h3>输入源</h3>
+      <textarea id="htmlInput" placeholder="粘贴HTML内容或输入网页URL..."></textarea>
+      <div style="display: flex; gap: 10px;">
+        <button onclick="loadFromHtml()">解析HTML</button>
+        <button onclick="fetchFromUrl()" class="secondary">获取URL内容</button>
       </div>
     </div>
     
     <div class="config-box">
       <h3>筛选设置</h3>
-      <div style="display: flex; flex-wrap: wrap; gap: 10px; align-items: center; margin-bottom: 15px;">
-        <label>最小宽度: <input type="number" id="minWidth" value="0" min="0"></label>
-        <label>最小高度: <input type="number" id="minHeight" value="0" min="0"></label>
-        <button onclick="applyFilter()" style="width: auto; padding: 10px 15px;">应用筛选</button>
+      <div style="margin-bottom: 15px;">
+        <label>最小宽度: <input type="number" id="minWidth" value="0" style="width: 60px;"></label>
+        <label>最小高度: <input type="number" id="minHeight" value="0" style="width: 60px;"></label>
+        <button onclick="applyFilter()" style="margin-left: 10px;">应用筛选</button>
       </div>
       
-      <h3>图片属性设置</h3>
-      <div style="margin-bottom: 15px;">
-        <input type="text" id="attrInput" value="data-src,src,data-original" placeholder="例如: data-src,src" style="width: 100%; padding: 12px; border-radius: 8px;">
-        <small>多个属性用逗号分隔，将按顺序尝试获取</small>
-      </div>
+      <h3>图片属性</h3>
+      <input type="text" id="attrInput" value="src,data-src,data-original" placeholder="用逗号分隔多个属性" style="width: 100%; padding: 8px; margin-bottom: 15px;">
       
       <h3>操作</h3>
-      <div class="actions">
+      <div style="display: flex; flex-wrap: wrap; gap: 10px;">
         <button onclick="selectAll()">全选</button>
         <button onclick="deselectAll()">取消全选</button>
-        <button onclick="deleteSelected()" style="background: #FA5151;">删除选中</button>
-        <button onclick="copyResults()">复制结果</button>
+        <button onclick="deleteSelected()" style="background: #dc3545;">删除选中</button>
+        <button onclick="copyResults()">复制链接</button>
       </div>
     </div>
   </div>
@@ -401,150 +214,64 @@
   <div id="gallery"></div>
   
   <div class="loading-overlay" id="loadingOverlay">
-    <div id="loadingText" style="font-size: 17px; margin-bottom: 15px; font-weight: 500;">加载中...</div>
-    <div class="progress-container">
-      <div class="progress-bar" id="progressBar"></div>
+    <div id="loadingText">加载中...</div>
+    <div class="progress-bar">
+      <div class="progress-fill" id="progressFill"></div>
     </div>
-    <div id="progressText" style="margin-top: 15px; font-size: 14px;">0/0</div>
-    <button onclick="cancelLoading()" style="margin-top: 20px; background: #FA5151; width: auto; padding: 10px 20px;">取消</button>
+    <div id="progressText">0/0</div>
+    <button onclick="cancelLoading()" style="margin-top: 15px; background: #dc3545;">取消</button>
   </div>
 
   <script>
     let allImages = [];
     let currentFiltered = [];
-    let loadingCanceled = false;
-    let currentLoadingProcess = null;
+    let isLoading = false;
 
-    // 切换标签页
-    function switchTab(tabId) {
-      document.querySelectorAll('.tab').forEach(tab => tab.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(content => content.classList.remove('active'));
-      
-      document.querySelector(`[onclick="switchTab('${tabId}')"]`).classList.add('active');
-      document.getElementById(tabId).classList.add('active');
-    }
-
-    // 设置拖放功能
-    const dropArea = document.getElementById('dropArea');
-    const htmlInput = document.getElementById('htmlInput');
-
-    ['dragenter', 'dragover', 'dragleave', 'drop'].forEach(eventName => {
-      dropArea.addEventListener(eventName, preventDefaults, false);
-    });
-
-    function preventDefaults(e) {
-      e.preventDefault();
-      e.stopPropagation();
-    }
-
-    ['dragenter', 'dragover'].forEach(eventName => {
-      dropArea.addEventListener(eventName, highlight, false);
-    });
-
-    ['dragleave', 'drop'].forEach(eventName => {
-      dropArea.addEventListener(eventName, unhighlight, false);
-    });
-
-    function highlight() {
-      dropArea.classList.add('highlight');
-    }
-
-    function unhighlight() {
-      dropArea.classList.remove('highlight');
-    }
-
-    dropArea.addEventListener('drop', handleDrop, false);
-
-    function handleDrop(e) {
-      const dt = e.dataTransfer;
-      const files = dt.files;
-      
-      if (files.length) {
-        const file = files[0];
-        if (file.type === 'text/html' || file.name.endsWith('.html')) {
-          const reader = new FileReader();
-          reader.onload = function(e) {
-            htmlInput.value = e.target.result;
-          };
-          reader.readAsText(file);
-        } else {
-          alert('请上传HTML文件');
-        }
-      }
-    }
-
-    // 从URL获取网页内容（包括微信文章）
-    async function fetchFromUrl() {
-      const url = document.getElementById('urlInput').value.trim();
-      if (!url) {
-        alert('请输入有效的URL');
-        return;
-      }
-
-      showLoading(true, '正在获取网页内容...');
-      loadingCanceled = false;
-      
-      try {
-        // 在微信环境中直接使用当前页面内容
-        if (typeof WeixinJSBridge !== 'undefined') {
-          // 微信内置浏览器环境
-          if (confirm('检测到微信浏览器，将使用当前页面内容。请确保已打开目标文章页面。')) {
-            htmlInput.value = document.documentElement.outerHTML;
-            switchTab('html-tab');
-            await loadImages();
-            return;
-          } else {
-            showLoading(false);
-            return;
-          }
-        }
-        
-        // 非微信环境使用CORS代理
-        const proxyUrl = `https://api.allorigins.win/get?url=${encodeURIComponent(url)}&callback=?`;
-        
-        currentLoadingProcess = fetch(proxyUrl, {
-          headers: {
-            'X-Requested-With': 'XMLHttpRequest',
-            'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/91.0.4472.124 Safari/537.36'
-          }
-        });
-        
-        const response = await currentLoadingProcess;
-        const data = await response.json();
-        
-        if (data.contents) {
-          htmlInput.value = data.contents;
-          switchTab('html-tab');
-          await loadImages();
-        } else {
-          throw new Error('无法获取网页内容');
-        }
-      } catch (error) {
-        if (!loadingCanceled) {
-          alert('获取网页内容失败: ' + error.message);
-          console.error(error);
-          
-          // 提供备选方案
-          if (confirm('是否尝试打开网页手动复制内容？')) {
-            window.open(url, '_blank');
-          }
-        }
-      } finally {
-        if (!loadingCanceled) {
-          showLoading(false);
-        }
-        currentLoadingProcess = null;
-      }
-    }
-
-    // 加载图片
-    async function loadImages() {
-      const html = htmlInput.value;
+    // 从HTML内容加载图片
+    async function loadFromHtml() {
+      const html = document.getElementById('htmlInput').value;
       if (!html) {
         alert('请输入HTML内容');
         return;
       }
+      
+      startLoading('解析HTML中...');
+      try {
+        await parseAndLoadImages(html);
+      } catch (error) {
+        alert('解析失败: ' + error.message);
+      } finally {
+        endLoading();
+      }
+    }
 
+    // 从URL获取内容
+    async function fetchFromUrl() {
+      const url = document.getElementById('htmlInput').value.trim();
+      if (!url) {
+        alert('请输入URL');
+        return;
+      }
+      
+      startLoading('获取网页内容中...');
+      try {
+        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+        const data = await response.json();
+        
+        if (data.contents) {
+          await parseAndLoadImages(data.contents);
+        } else {
+          throw new Error('无法获取网页内容');
+        }
+      } catch (error) {
+        alert('获取失败: ' + error.message);
+      } finally {
+        endLoading();
+      }
+    }
+
+    // 解析并加载图片
+    async function parseAndLoadImages(html) {
       const parser = new DOMParser();
       const doc = parser.parseFromString(html, 'text/html');
       
@@ -552,92 +279,67 @@
       currentFiltered = [];
       document.getElementById('gallery').innerHTML = '';
       
-      // 获取要解析的属性
-      const attrInput = document.getElementById('attrInput').value;
-      const attributes = attrInput.split(',').map(attr => attr.trim()).filter(attr => attr);
-      
-      if (attributes.length === 0) {
-        alert('请至少指定一个要解析的属性');
-        return;
+      // 获取属性列表
+      const attrs = document.getElementById('attrInput').value.split(',').map(a => a.trim()).filter(a => a);
+      if (attrs.length === 0) {
+        throw new Error('请指定至少一个图片属性');
       }
-
-      showLoading(true, '正在解析图片...');
-      loadingCanceled = false;
       
-      // 收集所有指定属性的图片URL
-      let elements = [];
-      attributes.forEach(attr => {
-        elements = elements.concat(Array.from(doc.querySelectorAll(`[${attr}]`)));
+      // 收集所有图片URL
+      const elements = [];
+      attrs.forEach(attr => {
+        elements.push(...doc.querySelectorAll(`[${attr}]`));
       });
       
-      const links = [...new Set(elements.map(el => {
-        for (const attr of attributes) {
-          if (el.hasAttribute(attr)) {
-            const url = el.getAttribute(attr);
-            // 处理微信图片的URL（去掉协议部分可能存在的转义）
-            return url.replace(/^https?:%2F%2F/, 'https://').replace(/^http:%2F%2F/, 'http://');
-          }
+      const urls = [...new Set(elements.map(el => {
+        for (const attr of attrs) {
+          if (el.hasAttribute(attr)) return el.getAttribute(attr);
         }
         return null;
       }).filter(url => url))];
       
-      if (links.length === 0) {
-        alert('没有找到符合条件的图片');
-        showLoading(false);
-        return;
+      if (urls.length === 0) {
+        throw new Error('未找到符合条件的图片');
       }
-
-      // 更新进度条
-      updateProgress(0, links.length);
       
-      // 异步加载图片获取尺寸
-      try {
-        for (let i = 0; i < links.length; i++) {
-          if (loadingCanceled) break;
-          
-          const url = links[i];
-          try {
-            await loadImageWithProgress(url, i, links.length);
-          } catch (error) {
-            console.error(`加载图片失败: ${url}`, error);
-            allImages.push({
-              url,
-              width: 0,
-              height: 0,
-              selected: false,
-              error: true
-            });
-          }
+      // 加载图片获取尺寸
+      updateProgress(0, urls.length);
+      for (let i = 0; i < urls.length; i++) {
+        if (!isLoading) break;
+        
+        try {
+          await loadImage(urls[i]);
+        } catch (error) {
+          console.error('加载图片失败:', urls[i], error);
+          allImages.push({
+            url: urls[i],
+            width: 0,
+            height: 0,
+            error: true
+          });
         }
-
-        if (!loadingCanceled) {
-          currentFiltered = allImages.slice();
-          applyFilter();
-        }
-      } finally {
-        showLoading(false);
+        updateProgress(i + 1, urls.length);
       }
+      
+      currentFiltered = [...allImages];
+      renderGallery();
     }
 
-    // 带进度条的图片加载
-    function loadImageWithProgress(url, current, total) {
-      return new Promise((resolve, reject) => {
-        if (loadingCanceled) {
-          reject(new Error('用户取消'));
-          return;
-        }
-
+    // 加载单个图片获取尺寸
+    function loadImage(url) {
+      return new Promise((resolve) => {
         const img = new Image();
-        img.crossOrigin = "Anonymous"; // 尝试跨域请求
-        
-        // 处理微信图片可能的特殊URL
-        let finalUrl = url;
-        if (url.startsWith('//')) {
-          finalUrl = 'https:' + url;
-        } else if (url.startsWith('http%3A%2F%2F')) {
-          finalUrl = decodeURIComponent(url);
-        } else if (url.startsWith('data:')) {
-          // 跳过Data URL
+        img.onload = () => {
+          allImages.push({
+            url,
+            width: img.naturalWidth,
+            height: img.naturalHeight,
+            selected: false,
+            error: false
+          });
+          resolve();
+        };
+        img.onerror = () => {
           allImages.push({
             url,
             width: 0,
@@ -645,109 +347,41 @@
             selected: false,
             error: true
           });
-          updateProgress(current + 1, total);
-          return resolve();
-        }
-        
-        img.src = finalUrl;
-        
-        img.onload = () => {
-          if (loadingCanceled) return;
-          
-          allImages.push({
-            url: finalUrl,
-            width: img.naturalWidth,
-            height: img.naturalHeight,
-            selected: false,
-            error: false
-          });
-          updateProgress(current + 1, total);
           resolve();
         };
+        img.src = url;
         
-        img.onerror = () => {
-          if (loadingCanceled) return;
-          
-          // 尝试其他可能的URL格式
-          if (!finalUrl.startsWith('http') && !finalUrl.startsWith('//')) {
-            img.src = 'https://' + finalUrl;
-            img.onerror = null;
-            img.onload = () => {
-              allImages.push({
-                url: 'https://' + finalUrl,
-                width: img.naturalWidth,
-                height: img.naturalHeight,
-                selected: false,
-                error: false
-              });
-              updateProgress(current + 1, total);
-              resolve();
-            };
-            img.onerror = () => {
-              allImages.push({
-                url: finalUrl,
-                width: 0,
-                height: 0,
-                selected: false,
-                error: true
-              });
-              updateProgress(current + 1, total);
-              resolve();
-            };
-          } else {
-            allImages.push({
-              url: finalUrl,
-              width: 0,
-              height: 0,
-              selected: false,
-              error: true
-            });
-            updateProgress(current + 1, total);
-            resolve();
-          }
-        };
-        
-        // 设置超时
+        // 超时处理
         setTimeout(() => {
-          if (!img.complete && !loadingCanceled) {
+          if (!img.complete) {
+            img.onload = img.onerror = null;
             allImages.push({
-              url: finalUrl,
+              url,
               width: 0,
               height: 0,
               selected: false,
               error: true
             });
-            updateProgress(current + 1, total);
             resolve();
           }
         }, 10000);
       });
     }
 
-    // 更新进度条
-    function updateProgress(current, total) {
-      const percent = Math.round((current / total) * 100);
-      document.getElementById('progressBar').style.width = `${percent}%`;
-      document.getElementById('progressText').textContent = `${current}/${total} (${percent}%)`;
-      document.getElementById('loadingText').textContent = `正在加载图片... ${percent}%`;
-    }
-
-    // 渲染图片库
-    function renderGallery(images) {
+    // 渲染图片列表
+    function renderGallery() {
       const gallery = document.getElementById('gallery');
-      gallery.innerHTML = images.map((img, index) => `
-        <div class="img-card ${img.selected ? 'selected' : ''} ${img.error ? 'error' : ''}" 
-             onclick="toggleSelect(${index}, event)">
-          <input type="checkbox" class="checkbox" 
-                 ${img.selected ? 'checked' : ''} 
-                 onchange="toggleSelect(${index})">
-          <img src="${img.url}" alt="缩略图" onerror="this.style.display='none'">
+      gallery.innerHTML = currentFiltered.map((img, i) => `
+        <div class="img-card ${img.selected ? 'selected' : ''}" onclick="toggleSelect(${i})">
+          <input type="checkbox" class="checkbox" ${img.selected ? 'checked' : ''}>
+          <img src="${img.url}" alt="" onerror="this.style.display='none'">
           <div class="size-info">
-            ${img.width}x${img.height || '未知'}
-            ${img.error ? '<span style="color:#FA5151">(加载失败)</span>' : ''}
+            ${img.width}x${img.height || '?'}
+            ${img.error ? '<span style="color:red">(加载失败)</span>' : ''}
           </div>
         </div>
       `).join('');
+      
       updateStats();
     }
 
@@ -759,83 +393,61 @@
       currentFiltered = allImages.filter(img => 
         img.width >= minW && img.height >= minH
       );
-      renderGallery(currentFiltered);
+      renderGallery();
     }
 
-    // 切换选择状态
-    function toggleSelect(index, event) {
-      if (event) event.stopPropagation();
+    // 选择操作
+    function toggleSelect(index) {
       currentFiltered[index].selected = !currentFiltered[index].selected;
       
-      // 同步到总数据
-      const targetUrl = currentFiltered[index].url;
-      const mainIndex = allImages.findIndex(img => img.url === targetUrl);
-      if (mainIndex >= 0) {
-        allImages[mainIndex].selected = currentFiltered[index].selected;
-      }
+      // 同步到allImages
+      const url = currentFiltered[index].url;
+      const img = allImages.find(img => img.url === url);
+      if (img) img.selected = currentFiltered[index].selected;
       
-      renderGallery(currentFiltered);
+      renderGallery();
     }
 
-    // 全选/取消全选
     function selectAll() {
       currentFiltered.forEach(img => img.selected = true);
       allImages.forEach(img => {
-        if (currentFiltered.some(fImg => fImg.url === img.url)) {
-          img.selected = true;
-        }
+        if (currentFiltered.some(f => f.url === img.url)) img.selected = true;
       });
-      renderGallery(currentFiltered);
+      renderGallery();
     }
 
     function deselectAll() {
       currentFiltered.forEach(img => img.selected = false);
       allImages.forEach(img => {
-        if (currentFiltered.some(fImg => fImg.url === img.url)) {
-          img.selected = false;
-        }
+        if (currentFiltered.some(f => f.url === img.url)) img.selected = false;
       });
-      renderGallery(currentFiltered);
+      renderGallery();
     }
 
-    // 删除选中项
+    // 删除选中
     function deleteSelected() {
-      const selectedUrls = currentFiltered
-        .filter(img => img.selected)
-        .map(img => img.url);
+      const selected = currentFiltered.filter(img => img.selected).map(img => img.url);
+      if (selected.length === 0) return alert('请先选择图片');
       
-      if (selectedUrls.length === 0) {
-        alert('请先选择要删除的图片');
-        return;
-      }
+      if (!confirm(`确定删除 ${selected.length} 张图片吗？`)) return;
       
-      if (!confirm(`确定要删除选中的 ${selectedUrls.length} 张图片吗？`)) {
-        return;
-      }
-      
-      allImages = allImages.filter(img => 
-        !selectedUrls.includes(img.url)
-      );
+      allImages = allImages.filter(img => !selected.includes(img.url));
       applyFilter();
     }
 
     // 复制结果
     function copyResults() {
-      const links = currentFiltered.map(img => img.url);
-      if (links.length === 0) {
-        alert('没有可复制的图片链接');
-        return;
-      }
+      const urls = currentFiltered.map(img => img.url);
+      if (urls.length === 0) return alert('没有可复制的图片');
       
-      navigator.clipboard.writeText(links.join('\n')).then(() => {
-        alert(`已复制 ${links.length} 个链接到剪贴板！`);
+      navigator.clipboard.writeText(urls.join('\n')).then(() => {
+        alert(`已复制 ${urls.length} 个图片链接`);
       }).catch(err => {
-        alert('复制失败，请手动选择复制: ' + err);
-        console.error(err);
+        alert('复制失败: ' + err);
       });
     }
 
-    // 更新统计信息
+    // 更新统计
     function updateStats() {
       const total = allImages.length;
       const visible = currentFiltered.length;
@@ -848,27 +460,27 @@
       `;
     }
 
-    // 显示/隐藏加载状态
-    function showLoading(show, message = '加载中...') {
-      const overlay = document.getElementById('loadingOverlay');
-      overlay.style.display = show ? 'flex' : 'none';
-      document.getElementById('loadingText').textContent = message;
+    // 加载状态控制
+    function startLoading(text) {
+      isLoading = true;
+      document.getElementById('loadingText').textContent = text || '加载中...';
+      document.getElementById('loadingOverlay').style.display = 'flex';
     }
 
-    // 取消加载
+    function endLoading() {
+      isLoading = false;
+      document.getElementById('loadingOverlay').style.display = 'none';
+    }
+
     function cancelLoading() {
-      loadingCanceled = true;
-      if (currentLoadingProcess) {
-        // 尝试中止fetch请求
-        currentLoadingProcess.abort && currentLoadingProcess.abort();
-      }
-      showLoading(false);
-      alert('操作已取消');
+      isLoading = false;
+      document.getElementById('loadingOverlay').style.display = 'none';
     }
 
-    // 测试函数
-    function testWechatUrl() {
-      document.getElementById('urlInput').value = 'https://mp.weixin.qq.com/s/ssj4hnk95iLgo8RpA9E1QQ';
+    function updateProgress(current, total) {
+      const percent = Math.round((current / total) * 100);
+      document.getElementById('progressFill').style.width = `${percent}%`;
+      document.getElementById('progressText').textContent = `${current}/${total} (${percent}%)`;
     }
   </script>
 </body>
