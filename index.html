@@ -4,12 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>图片提取管理工具 - 224248工具箱</title>
-  <style>
   :root {
   --primary-color: #2c3e50;
   --secondary-color: #7f8c8d;
   --light-bg: #f5f7fa;
-  --dark-bg: #34495e;
+  --dark-bg: #121212;
   --text-color: #2c3e50;
   --border-color: #dfe6e9;
   --success-color: #27ae60;
@@ -20,18 +19,18 @@
   --button-radius: 6px;
 }
 
-/* 暗夜模式变量 */
+/* 暗夜模式变量 - 纯黑和灰度白风格 */
 :root.dark-mode {
-  --primary-color: #3498db;
-  --secondary-color: #95a5a6;
-  --light-bg: #2c3e50;
-  --dark-bg: #1a252f;
-  --text-color: #ecf0f1;
-  --border-color: #34495e;
-  --success-color: #2ecc71;
-  --danger-color: #e74c3c;
-  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.2), 0 1px 3px rgba(0, 0, 0, 0.3);
-  --card-hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.3), 0 4px 6px rgba(0, 0, 0, 0.2);
+  --primary-color: #ffffff;
+  --secondary-color: #b0b0b0;
+  --light-bg: #121212;
+  --dark-bg: #1e1e1e;
+  --text-color: #e0e0e0;
+  --border-color: #333333;
+  --success-color: #4caf50;
+  --danger-color: #f44336;
+  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4);
+  --card-hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.4), 0 4px 6px rgba(0, 0, 0, 0.3);
 }
 
 body {
@@ -45,14 +44,18 @@ body {
   transition: all 0.3s ease;
 }
 
-/* 暗夜模式切换按钮 */
+/* 确保所有文本元素使用文字颜色变量 */
+h1, h2, h3, h4, h5, h6, p, span, div, label, a {
+  color: var(--text-color);
+}
+
 .theme-switcher {
   position: fixed;
   top: 20px;
   right: 20px;
   z-index: 100;
   background: var(--primary-color);
-  color: white;
+  color: var(--dark-bg);
   border: none;
   border-radius: 50%;
   width: 40px;
@@ -91,7 +94,7 @@ h3 {
   padding-bottom: 8px;
 }
 
-    h4 {
+h4 {
   color: var(--primary-color);
   margin-bottom: 25px;
   text-align: center;
@@ -132,6 +135,7 @@ textarea {
   font-family: inherit;
   background-color: #f8f9fa;
   transition: all 0.3s ease;
+  color: var(--text-color);
 }
 
 textarea:focus {
@@ -144,7 +148,7 @@ textarea:focus {
 button {
   padding: 10px 16px;
   background: var(--primary-color);
-  color: white;
+  color: var(--dark-bg);
   border: none;
   border-radius: var(--button-radius);
   cursor: pointer;
@@ -227,7 +231,7 @@ button.danger {
 
 .size-info {
   font-size: 13px;
-  color: #7f8c8d;
+  color: var(--secondary-color);
   margin: 8px 0;
   text-align: center;
   font-weight: 500;
@@ -243,6 +247,7 @@ button.danger {
   max-height: 60px;
   overflow-y: auto;
   border: 1px solid #eee;
+  color: var(--text-color);
 }
 
 .url-edit {
@@ -254,6 +259,7 @@ button.danger {
   border-radius: 6px;
   background: #f8f9fa;
   transition: all 0.3s ease;
+  color: var(--text-color);
 }
 
 .url-edit:focus {
@@ -353,6 +359,7 @@ button.danger {
   padding: 6px 10px;
   border-radius: 6px;
   border: 1px solid var(--border-color);
+  color: var(--text-color);
 }
 
 .attr-checkbox input {
@@ -381,6 +388,7 @@ button.danger {
   border-radius: 6px;
   background: white;
   transition: all 0.3s ease;
+  color: var(--text-color);
 }
 
 .batch-edit-row input:focus {
@@ -395,150 +403,10 @@ input[type="number"] {
   border-radius: 6px;
   width: 70px;
   background: white;
+  color: var(--text-color);
 }
 
 /* 暗夜模式特定调整 */
-.dark-mode .config-box,
-.dark-mode .stats,
-.dark-mode .batch-edit-container,
-.dark-mode .img-card {
-  background-color: var(--dark-bg);
-  border-color: #2c3e50;
-}
-
-.dark-mode textarea,
-.dark-mode input,
-.dark-mode .url-display,
-.dark-mode .attr-checkbox {
-  background-color: #34495e;
-  border-color: #2c3e50;
-  color: #ecf0f1;
-}
-
-.dark-mode .url-display {
-  background-color: #2c3e50;
-}
-
-.dark-mode .attr-checkbox {
-  background-color: #34495e;
-}
-
-.dark-mode .loading-overlay {
-  background: rgba(26, 39, 51, 0.9);
-}
-
-.dark-mode .img-card img {
-  background: #2c3e50;
-  border-color: #34495e;
-}
-
-.dark-mode .size-info {
-  color: #bdc3c7;
-}
-
-.dark-mode .url-edit:focus,
-.dark-mode textarea:focus,
-.dark-mode input:focus {
-  background-color: #34495e;
-  box-shadow: 0 0 0 2px rgba(52, 152, 219, 0.3);
-}
-
-@media (max-width: 768px) {
-  .container {
-    flex-direction: column;
-  }
-  
-  #gallery {
-    grid-template-columns: repeat(2, 1fr);
-  }
-  
-  .stats {
-    flex-direction: column;
-    gap: 10px;
-  }
-  
-  .batch-edit-row {
-    flex-direction: column;
-  }
-  
-  .theme-switcher {
-    top: 10px;
-    right: 10px;
-    width: 36px;
-    height: 36px;
-  }
-}
-  </style>
-
-  <style>
-:root {
-  --primary-color: #2c3e50;
-  --secondary-color: #7f8c8d;
-  --light-bg: #f5f7fa;
-  --dark-bg: #121212; /* 改为纯黑色背景 */
-  --text-color: #2c3e50;
-  --border-color: #dfe6e9;
-  --success-color: #27ae60;
-  --danger-color: #e74c3c;
-  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.05), 0 1px 3px rgba(0, 0, 0, 0.1);
-  --card-hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.1), 0 4px 6px rgba(0, 0, 0, 0.05); 
-  --border-radius: 10px;
-  --button-radius: 6px;
-}
-
-/* 暗夜模式变量 - 改为纯黑和灰度白风格 */
-:root.dark-mode {
-  --primary-color: #ffffff; /* 白色作为主色 */
-  --secondary-color: #b0b0b0; /* 浅灰色 */
-  --light-bg: #121212; /* 纯黑背景 */
-  --dark-bg: #1e1e1e; /* 稍亮的黑色用于卡片 */
-  --text-color: #e0e0e0; /* 浅灰色文字 */
-  --border-color: #333333; /* 深灰色边框 */
-  --success-color: #4caf50;
-  --danger-color: #f44336;
-  --card-shadow: 0 4px 6px rgba(0, 0, 0, 0.3), 0 1px 3px rgba(0, 0, 0, 0.4);
-  --card-hover-shadow: 0 10px 15px rgba(0, 0, 0, 0.4), 0 4px 6px rgba(0, 0, 0, 0.3);
-}
-
-body {
-  font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
-  padding: 20px;
-  color: var(--text-color);
-  line-height: 1.6;
-  max-width: 1200px;
-  margin: 0 auto;
-  background-color: var(--light-bg);
-  transition: all 0.3s ease;
-}
-
-/* 确保所有文本元素都使用文字颜色变量 */
-h1, h2, h3, h4, h5, h6, p, span, div, label {
-  color: var(--text-color);
-}
-
-/* 暗夜模式切换按钮 */
-.theme-switcher {
-  position: fixed;
-  top: 20px;
-  right: 20px;
-  z-index: 100;
-  background: var(--primary-color);
-  color: var(--dark-bg); /* 按钮文字颜色与背景形成对比 */
-  border: none;
-  border-radius: 50%;
-  width: 40px;
-  height: 40px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.2);
-  transition: all 0.3s ease;
-}
-
-/* 其他样式保持不变... */
-
-/* 暗夜模式特定调整 - 更新为新的配色方案 */
 .dark-mode .config-box,
 .dark-mode .stats,
 .dark-mode .batch-edit-container,
@@ -584,17 +452,35 @@ h1, h2, h3, h4, h5, h6, p, span, div, label {
   box-shadow: 0 0 0 2px rgba(255, 255, 255, 0.1);
 }
 
-/* 确保所有输入框和按钮在暗夜模式下都有正确的样式 */
 .dark-mode button {
-  color: #121212; /* 深色文字以在浅色按钮上可见 */
+  color: #121212;
 }
 
-.dark-mode button:hover {
-  opacity: 0.9;
+@media (max-width: 768px) {
+  .container {
+    flex-direction: column;
+  }
+  
+  #gallery {
+    grid-template-columns: repeat(2, 1fr);
+  }
+  
+  .stats {
+    flex-direction: column;
+    gap: 10px;
+  }
+  
+  .batch-edit-row {
+    flex-direction: column;
+  }
+  
+  .theme-switcher {
+    top: 10px;
+    right: 10px;
+    width: 36px;
+    height: 36px;
+  }
 }
-
-/* 其他媒体查询和响应式样式保持不变... */
-</style>
 
   <!-- 引入Font Awesome图标 -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
