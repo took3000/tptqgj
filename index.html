@@ -411,6 +411,15 @@ input[type="number"] {
   color: var(--text-color);
 }
 
+    input[type="text"] {
+  padding: 8px;
+  border: 1px solid var(--border-color);
+  border-radius: 6px;
+  width: 70px;
+  background: var(--input-bg);
+  color: var(--text-color);
+}
+
 @media (max-width: 768px) {
   .container {
     flex-direction: column;
@@ -492,7 +501,7 @@ input[type="number"] {
     <div class="config-box">
       <h3>筛选设置</h3>
       <div style="margin-bottom: 15px;">
-  <label>最小宽度: <input type="number" id="minWidth" value="0" style="width: 60px;"></label>
+  <label>最小宽度: <input type="" id="minWidth" value="0" style="width: 60px;"></label>
   <label>最小高度: <input type="number" id="minHeight" value="0" style="width: 60px;"></label>
   <label>链接包含: <input type="text" id="urlFilter" placeholder="如: 640" style="width: 120px;"></label>
   <button onclick="applyFilter()" style="margin-left: 10px;">应用筛选</button>
