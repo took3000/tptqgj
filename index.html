@@ -492,10 +492,11 @@ input[type="number"] {
     <div class="config-box">
       <h3>筛选设置</h3>
       <div style="margin-bottom: 15px;">
-        <label>最小宽度: <input type="number" id="minWidth" value="0" style="width: 60px;"></label>
-        <label>最小高度: <input type="number" id="minHeight" value="0" style="width: 60px;"></label>
-        <button onclick="applyFilter()" style="margin-left: 10px;">应用筛选</button>
-      </div>
+  <label>最小宽度: <input type="number" id="minWidth" value="0" style="width: 60px;"></label>
+  <label>最小高度: <input type="number" id="minHeight" value="0" style="width: 60px;"></label>
+  <label>链接包含: <input type="text" id="urlFilter" placeholder="如: 640" style="width: 120px;"></label>
+  <button onclick="applyFilter()" style="margin-left: 10px;">应用筛选</button>
+</div>
       
       <h3>图片属性</h3>
       <div class="attr-checkboxes">
@@ -837,8 +838,15 @@ function loadImage(url) {
 // 渲染图片列表
 function renderGallery() {
   const gallery = document.getElementById('gallery');
+  const urlFilter = document.getElementById('urlFilter')?.value.trim().toLowerCase() || '';
+  
+  // 应用链接筛选
+  currentFiltered = allImages.filter(img => 
+    urlFilter === '' || img.url.toLowerCase().includes(urlFilter)
+  );
+  
   gallery.innerHTML = currentFiltered.map((img, i) => `
-    <div class="img-card ${img.selected ? 'selected' : ''}">
+    <div class="img-card ${img.selected ? 'selected' : ''}" data-index="${i}">
       <input type="checkbox" class="checkbox" ${img.selected ? 'checked' : ''} 
              onclick="event.stopPropagation(); toggleSelect(${i})">
       ${img.error ? '<span class="error-badge">错误</span>' : ''}
@@ -919,9 +927,12 @@ function copyImageUrl(index) {
 function applyFilter() {
   const minW = parseInt(document.getElementById('minWidth').value) || 0;
   const minH = parseInt(document.getElementById('minHeight').value) || 0;
+  const urlFilter = document.getElementById('urlFilter').value.trim().toLowerCase();
   
   currentFiltered = allImages.filter(img => 
-    img.width >= minW && img.height >= minH
+    img.width >= minW && 
+    img.height >= minH &&
+    (urlFilter === '' || img.url.toLowerCase().includes(urlFilter))
   );
   renderGallery();
 }
