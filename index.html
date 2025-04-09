@@ -358,563 +358,560 @@
 
 
   <script>
-    // 提取图片链接
-    function extractImageLinks() {
-      const text = document.getElementById('htmlInput').value;
-      if (!text) {
-        alert('请输入内容');
-        return;
-      }
-      
-      startLoading('提取图片链接中...');
-      
-      try {
-        // 匹配常见的图片URL格式
-        const imageRegex = /(https?:\/\/[^\s"'<>]+?\.(?:jpg|jpeg|png|gif|webp|bmp|svg|ico)(?:\?\S*)?)/gi;
-        const matches = text.match(imageRegex) || [];
-        
-        // 去重
-        const uniqueUrls = [...new Set(matches)];
-        
-        if (uniqueUrls.length === 0) {
-          throw new Error('未找到图片链接');
-        }
-        
-        // 清空现有图片
-        allImages = [];
-        currentFiltered = [];
-        document.getElementById('gallery').innerHTML = '';
-        
-        // 加载图片获取尺寸
-        updateProgress(0, uniqueUrls.length);
-        return Promise.all(uniqueUrls.map((url, i) => {
-          return loadImage(url).then(imgData => {
-            allImages.push({
-              url: url,
-              originalUrl: url,
-              source: '提取的链接',
-              width: imgData.width,
-              height: imgData.height,
-              selected: false,
-              error: false
-            });
-            updateProgress(i + 1, uniqueUrls.length);
-          }).catch(error => {
-            console.error('加载图片失败:', url, error);
-            allImages.push({
-              url: url,
-              originalUrl: url,
-              source: '提取的链接',
-              width: 0,
-              height: 0,
-              selected: false,
-              error: true
-            });
-            updateProgress(i + 1, uniqueUrls.length);
-          });
-        }).then(() => {
-          currentFiltered = [...allImages];
-          renderGallery();
-        });
-      } catch (error) {
-        alert('提取失败: ' + error.message);
-      } finally {
-        endLoading();
-      }
-    }
-    
-  </script>
+let allImages = [];
+let currentFiltered = [];
+let isLoading = false;
+let currentUrls = [];
+let currentUrlIndex = 0;
+
+// 提取图片链接
+function extractImageLinks() {
+  const text = document.getElementById('htmlInput').value;
+  if (!text) {
+    alert('请输入内容');
+    return;
+  }
   
-  <script>
-    let allImages = [];
-    let currentFiltered = [];
-    let isLoading = false;
-    let currentUrls = [];
-    let currentUrlIndex = 0;
-
-    // 从HTML内容加载图片
-    async function loadFromHtml() {
-      const html = document.getElementById('htmlInput').value;
-      if (!html) {
-        alert('请输入HTML内容');
-        return;
-      }
-      
-      startLoading('解析HTML中...');
-      try {
-        await parseAndLoadImages(html);
-      } catch (error) {
-        alert('解析失败: ' + error.message);
-      } finally {
-        endLoading();
-      }
-    }
-
-    // 从URL获取内容
-    async function fetchFromUrl() {
-      const input = document.getElementById('htmlInput').value.trim();
-      if (!input) {
-        alert('请输入URL');
-        return;
-      }
-      
-      // 解析多行URL
-      const urls = input.split('\n')
-        .map(url => url.trim())
-        .filter(url => url.startsWith('http'));
-      
-      if (urls.length === 0) {
-        alert('请输入有效的URL，例如: https://example.com');
-        return;
-      }
-      
-      currentUrls = urls;
-      currentUrlIndex = 0;
-      
-      startLoading(`获取网页内容中 (1/${urls.length})...`);
-      fetchNextUrl();
+  startLoading('提取图片链接中...');
+  
+  try {
+    // 匹配常见的图片URL格式
+    const imageRegex = /(https?:\/\/[^\s"'<>]+?\.(?:jpg|jpeg|png|gif|webp|bmp|svg|ico)(?:\?\S*)?)/gi;
+    const matches = text.match(imageRegex) || [];
+    
+    // 去重
+    const uniqueUrls = [...new Set(matches)];
+    
+    if (uniqueUrls.length === 0) {
+      throw new Error('未找到图片链接');
     }
     
-    // 获取下一个URL
-    async function fetchNextUrl() {
-      if (currentUrlIndex >= currentUrls.length || !isLoading) {
-        endLoading();
-        return;
-      }
-      
-      const url = currentUrls[currentUrlIndex];
-      document.getElementById('loadingText').textContent = `获取网页内容中 (${currentUrlIndex + 1}/${currentUrls.length})...`;
-      
-      try {
-        const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
-        const data = await response.json();
-        
-        if (data.contents) {
-          await parseAndLoadImages(data.contents, url);
-        } else {
-          throw new Error('无法获取网页内容');
-        }
-      } catch (error) {
-        console.error('获取失败:', url, error);
-      }
-      
-      currentUrlIndex++;
-      if (currentUrlIndex < currentUrls.length) {
-        setTimeout(fetchNextUrl, 500); // 添加延迟避免请求过快
-      } else {
-        endLoading();
-      }
-    }
-
-    // 解析并加载图片
-    async function parseAndLoadImages(html, sourceUrl = '') {
-      const parser = new DOMParser();
-      const doc = parser.parseFromString(html, 'text/html');
-      
-      // 如果是第一次加载，清空现有图片
-      if (currentUrlIndex === 0) {
-        allImages = [];
-        currentFiltered = [];
-        document.getElementById('gallery').innerHTML = '';
-      }
-      
-      // 获取属性列表
-      const attrs = getSelectedAttributes();
-      if (attrs.length === 0) {
-        throw new Error('请指定至少一个图片属性');
-      }
-      
-      // 收集所有图片URL
-      const elements = [];
-      attrs.forEach(attr => {
-        elements.push(...doc.querySelectorAll(`[${attr}]`));
+    // 清空现有图片
+    allImages = [];
+    currentFiltered = [];
+    document.getElementById('gallery').innerHTML = '';
+    
+    // 加载图片获取尺寸
+    updateProgress(0, uniqueUrls.length);
+    return Promise.all(uniqueUrls.map((url, i) => {
+      return loadImage(url).then(imgData => {
+        allImages.push({
+          url: url,
+          originalUrl: url,
+          source: '提取的链接',
+          width: imgData.width,
+          height: imgData.height,
+          selected: false,
+          error: false
+        });
+        updateProgress(i + 1, uniqueUrls.length);
+      }).catch(error => {
+        console.error('加载图片失败:', url, error);
+        allImages.push({
+          url: url,
+          originalUrl: url,
+          source: '提取的链接',
+          width: 0,
+          height: 0,
+          selected: false,
+          error: true
+        });
+        updateProgress(i + 1, uniqueUrls.length);
       });
-      
-      const newUrls = [...new Set(elements.map(el => {
-        for (const attr of attrs) {
-          if (el.hasAttribute(attr)) return {
-            url: el.getAttribute(attr),
-            originalUrl: el.getAttribute(attr),
-            source: sourceUrl
-          };
-        }
-        return null;
-      }).filter(url => url))];
-      
-      if (newUrls.length === 0) {
-        if (currentUrlIndex === 0) {
-          throw new Error('未找到符合条件的图片');
-        }
-        return;
-      }
-      
-      // 加载图片获取尺寸
-      updateProgress(0, newUrls.length);
-      for (let i = 0; i < newUrls.length; i++) {
-        if (!isLoading) break;
-        
-        try {
-          const imgData = await loadImage(newUrls[i].url);
-          allImages.push({
-            ...newUrls[i],
-            width: imgData.width,
-            height: imgData.height,
-            selected: false,
-            error: false
-          });
-        } catch (error) {
-          console.error('加载图片失败:', newUrls[i].url, error);
-          allImages.push({
-            ...newUrls[i],
-            width: 0,
-            height: 0,
-            selected: false,
-            error: true
-          });
-        }
-        updateProgress(i + 1, newUrls.length);
-      }
-      
+    })).then(() => {
       currentFiltered = [...allImages];
       renderGallery();
+      endLoading();
+    });
+  } catch (error) {
+    alert('提取失败: ' + error.message);
+    endLoading();
+  }
+}
+
+// 从HTML内容加载图片
+async function loadFromHtml() {
+  const html = document.getElementById('htmlInput').value;
+  if (!html) {
+    alert('请输入HTML内容');
+    return;
+  }
+  
+  startLoading('解析HTML中...');
+  try {
+    await parseAndLoadImages(html);
+  } catch (error) {
+    alert('解析失败: ' + error.message);
+  } finally {
+    endLoading();
+  }
+}
+
+// 从URL获取内容
+async function fetchFromUrl() {
+  const input = document.getElementById('htmlInput').value.trim();
+  if (!input) {
+    alert('请输入URL');
+    return;
+  }
+  
+  // 解析多行URL
+  const urls = input.split('\n')
+    .map(url => url.trim())
+    .filter(url => url.startsWith('http'));
+  
+  if (urls.length === 0) {
+    alert('请输入有效的URL，例如: https://example.com');
+    return;
+  }
+  
+  currentUrls = urls;
+  currentUrlIndex = 0;
+  
+  startLoading(`获取网页内容中 (1/${urls.length})...`);
+  fetchNextUrl();
+}
+
+// 获取下一个URL
+async function fetchNextUrl() {
+  if (currentUrlIndex >= currentUrls.length || !isLoading) {
+    endLoading();
+    return;
+  }
+  
+  const url = currentUrls[currentUrlIndex];
+  document.getElementById('loadingText').textContent = `获取网页内容中 (${currentUrlIndex + 1}/${currentUrls.length})...`;
+  
+  try {
+    const response = await fetch(`https://api.allorigins.win/get?url=${encodeURIComponent(url)}`);
+    const data = await response.json();
+    
+    if (data.contents) {
+      await parseAndLoadImages(data.contents, url);
+    } else {
+      throw new Error('无法获取网页内容');
+    }
+  } catch (error) {
+    console.error('获取失败:', url, error);
+  }
+  
+  currentUrlIndex++;
+  if (currentUrlIndex < currentUrls.length) {
+    setTimeout(fetchNextUrl, 500); // 添加延迟避免请求过快
+  } else {
+    endLoading();
+  }
+}
+
+// 解析并加载图片
+async function parseAndLoadImages(html, sourceUrl = '') {
+  const parser = new DOMParser();
+  const doc = parser.parseFromString(html, 'text/html');
+  
+  // 如果是第一次加载，清空现有图片
+  if (currentUrlIndex === 0) {
+    allImages = [];
+    currentFiltered = [];
+    document.getElementById('gallery').innerHTML = '';
+  }
+  
+  // 获取属性列表
+  const attrs = getSelectedAttributes();
+  if (attrs.length === 0) {
+    throw new Error('请指定至少一个图片属性');
+  }
+  
+  // 收集所有图片URL
+  const elements = [];
+  attrs.forEach(attr => {
+    elements.push(...doc.querySelectorAll(`[${attr}]`));
+  });
+  
+  const newUrls = [...new Set(elements.map(el => {
+    for (const attr of attrs) {
+      if (el.hasAttribute(attr)) return {
+        url: el.getAttribute(attr),
+        originalUrl: el.getAttribute(attr),
+        source: sourceUrl
+      };
+    }
+    return null;
+  }).filter(url => url))];
+  
+  if (newUrls.length === 0) {
+    if (currentUrlIndex === 0) {
+      throw new Error('未找到符合条件的图片');
+    }
+    return;
+  }
+  
+  // 加载图片获取尺寸
+  updateProgress(0, newUrls.length);
+  for (let i = 0; i < newUrls.length; i++) {
+    if (!isLoading) break;
+    
+    try {
+      const imgData = await loadImage(newUrls[i].url);
+      allImages.push({
+        ...newUrls[i],
+        width: imgData.width,
+        height: imgData.height,
+        selected: false,
+        error: false
+      });
+    } catch (error) {
+      console.error('加载图片失败:', newUrls[i].url, error);
+      allImages.push({
+        ...newUrls[i],
+        width: 0,
+        height: 0,
+        selected: false,
+        error: true
+      });
+    }
+    updateProgress(i + 1, newUrls.length);
+  }
+  
+  currentFiltered = [...allImages];
+  renderGallery();
+}
+
+// 获取选中的属性
+function getSelectedAttributes() {
+  const checkboxes = document.querySelectorAll('input[name="imgAttr"]:checked');
+  const customAttrs = document.getElementById('customAttrInput').value
+    .split(',')
+    .map(a => a.trim())
+    .filter(a => a);
+  
+  return Array.from(checkboxes).map(cb => cb.value).concat(customAttrs);
+}
+
+// 加载单个图片获取尺寸
+function loadImage(url) {
+  return new Promise((resolve, reject) => {
+    const img = new Image();
+    img.onload = () => {
+      resolve({
+        url,
+        width: img.naturalWidth,
+        height: img.naturalHeight
+      });
+    };
+    img.onerror = () => {
+      reject(new Error('图片加载失败'));
+    };
+    img.src = url;
+    
+    // 超时处理
+    setTimeout(() => {
+      if (!img.complete) {
+        img.onload = img.onerror = null;
+        reject(new Error('图片加载超时'));
+      }
+    }, 10000);
+  });
+}
+
+// 渲染图片列表
+function renderGallery() {
+  const gallery = document.getElementById('gallery');
+  gallery.innerHTML = currentFiltered.map((img, i) => `
+    <div class="img-card ${img.selected ? 'selected' : ''}">
+      <input type="checkbox" class="checkbox" ${img.selected ? 'checked' : ''} 
+             onclick="event.stopPropagation(); toggleSelect(${i})">
+      ${img.error ? '<span class="error-badge">错误</span>' : ''}
+      <img src="${img.url}" alt="" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%23f5f5f5\'/><text x=\'50\' y=\'50\' font-family=\'Arial\' font-size=\'14\' fill=\'%23666\' text-anchor=\'middle\' dominant-baseline=\'middle\'>图片加载失败</text></svg>'">
+      <div class="size-info">
+        ${img.width}x${img.height || '?'}
+      </div>
+      <div class="url-display" title="${img.url}">${img.url}</div>
+      <input type="text" class="url-edit" value="${img.url}" placeholder="修改图片URL">
+      <div class="url-actions">
+        <button class="success" onclick="updateImageUrl(${i}, this)">更新</button>
+        <button class="secondary" onclick="copyImageUrl(${i})">复制</button>
+      </div>
+      ${img.source ? `<div style="font-size:11px;color:#888;margin-top:5px;">来源: ${img.source}</div>` : ''}
+    </div>
+  `).join('');
+  
+  updateStats();
+}
+
+// 更新图片URL
+function updateImageUrl(index, btn) {
+  const card = document.getElementById('gallery').children[index];
+  const newUrl = card.querySelector('.url-edit').value.trim();
+  
+  if (!newUrl) {
+    alert('请输入有效的URL');
+    return;
+  }
+  
+  btn.disabled = true;
+  btn.textContent = '更新中...';
+  
+  // 更新图片
+  const img = new Image();
+  img.onload = () => {
+    currentFiltered[index].url = newUrl;
+    currentFiltered[index].width = img.naturalWidth;
+    currentFiltered[index].height = img.naturalHeight;
+    currentFiltered[index].error = false;
+    
+    // 同步到allImages
+    const originalUrl = currentFiltered[index].originalUrl;
+    const imgInAll = allImages.find(img => img.originalUrl === originalUrl);
+    if (imgInAll) {
+      imgInAll.url = newUrl;
+      imgInAll.width = img.naturalWidth;
+      imgInAll.height = img.naturalHeight;
+      imgInAll.error = false;
     }
     
-    // 获取选中的属性
-    function getSelectedAttributes() {
-      const checkboxes = document.querySelectorAll('input[name="imgAttr"]:checked');
-      const customAttrs = document.getElementById('customAttrInput').value
-        .split(',')
-        .map(a => a.trim())
-        .filter(a => a);
-      
-      return Array.from(checkboxes).map(cb => cb.value).concat(customAttrs);
-    }
+    renderGallery();
+  };
+  img.onerror = () => {
+    alert('新图片URL无效，无法加载');
+    btn.disabled = false;
+    btn.textContent = '更新';
+  };
+  img.src = newUrl;
+}
 
-    // 加载单个图片获取尺寸
-    function loadImage(url) {
-      return new Promise((resolve, reject) => {
-        const img = new Image();
-        img.onload = () => {
-          resolve({
-            url,
-            width: img.naturalWidth,
-            height: img.naturalHeight
-          });
-        };
-        img.onerror = () => {
-          reject(new Error('图片加载失败'));
-        };
-        img.src = url;
+// 复制图片URL
+function copyImageUrl(index) {
+  const url = currentFiltered[index].url;
+  navigator.clipboard.writeText(url).then(() => {
+    const btn = document.getElementById('gallery').children[index].querySelector('.url-actions button:nth-child(2)');
+    const originalText = btn.textContent;
+    btn.textContent = '已复制!';
+    setTimeout(() => {
+      btn.textContent = originalText;
+    }, 2000);
+  }).catch(err => {
+    console.error('复制失败:', err);
+  });
+}
+
+// 应用筛选
+function applyFilter() {
+  const minW = parseInt(document.getElementById('minWidth').value) || 0;
+  const minH = parseInt(document.getElementById('minHeight').value) || 0;
+  
+  currentFiltered = allImages.filter(img => 
+    img.width >= minW && img.height >= minH
+  );
+  renderGallery();
+}
+
+// 选择操作
+function toggleSelect(index) {
+  currentFiltered[index].selected = !currentFiltered[index].selected;
+  
+  // 同步到allImages
+  const originalUrl = currentFiltered[index].originalUrl;
+  const img = allImages.find(img => img.originalUrl === originalUrl);
+  if (img) img.selected = currentFiltered[index].selected;
+  
+  renderGallery();
+}
+
+function selectAll() {
+  currentFiltered.forEach(img => img.selected = true);
+  allImages.forEach(img => {
+    if (currentFiltered.some(f => f.originalUrl === img.originalUrl)) img.selected = true;
+  });
+  renderGallery();
+}
+
+function deselectAll() {
+  currentFiltered.forEach(img => img.selected = false);
+  allImages.forEach(img => {
+    if (currentFiltered.some(f => f.originalUrl === img.originalUrl)) img.selected = false;
+  });
+  renderGallery();
+}
+
+// 删除选中
+function deleteSelected() {
+  const selected = currentFiltered.filter(img => img.selected).map(img => img.originalUrl);
+  if (selected.length === 0) return alert('请先选择图片');
+  
+  if (!confirm(`确定删除 ${selected.length} 张图片吗？`)) return;
+  
+  allImages = allImages.filter(img => !selected.includes(img.originalUrl));
+  applyFilter();
+}
+
+// 复制结果
+function copyResults() {
+  const urls = currentFiltered.map(img => img.url);
+  if (urls.length === 0) return alert('没有可复制的图片');
+  
+  navigator.clipboard.writeText(urls.join('\n')).then(() => {
+    alert(`已复制 ${urls.length} 个图片链接`);
+  }).catch(err => {
+    alert('复制失败: ' + err);
+  });
+}
+
+// 批量替换URL
+function batchReplaceUrl() {
+  const findText = document.getElementById('batchFind').value.trim();
+  const replaceText = document.getElementById('batchReplace').value;
+  
+  if (!findText) {
+    alert('请输入查找内容');
+    return;
+  }
+  
+  const selected = currentFiltered.filter(img => img.selected);
+  if (selected.length === 0) {
+    alert('请先选择图片');
+    return;
+  }
+  
+  let regex;
+  try {
+    // 尝试解析为正则表达式
+    const patternMatch = findText.match(/^\/(.*)\/([gimuy]*)$/);
+    if (patternMatch) {
+      regex = new RegExp(patternMatch[1], patternMatch[2]);
+    } else {
+      regex = new RegExp(escapeRegExp(findText), 'g');
+    }
+  } catch (e) {
+    alert('无效的正则表达式: ' + e.message);
+    return;
+  }
+  
+  selected.forEach(img => {
+    img.url = img.url.replace(regex, replaceText);
+    
+    // 同步到allImages
+    const imgInAll = allImages.find(i => i.originalUrl === img.originalUrl);
+    if (imgInAll) imgInAll.url = img.url;
+  });
+  
+  renderGallery();
+}
+
+// 批量提取URL部分
+function batchExtractUrl() {
+  const pattern = document.getElementById('batchPattern').value.trim();
+  
+  if (!pattern) {
+    alert('请输入提取模式');
+    return;
+  }
+  
+  const selected = currentFiltered.filter(img => img.selected);
+  if (selected.length === 0) {
+    alert('请先选择图片');
+    return;
+  }
+  
+  selected.forEach(img => {
+    try {
+      let newUrl = '';
+      
+      // 处理"=到?之间的内容"这种模式
+      if (pattern.includes('到')) {
+        const [startChar, endChar] = pattern.split('到').map(s => s.trim());
+        const startIndex = img.url.indexOf(startChar);
+        let endIndex = img.url.indexOf(endChar, startIndex + 1);
         
-        // 超时处理
-        setTimeout(() => {
-          if (!img.complete) {
-            img.onload = img.onerror = null;
-            reject(new Error('图片加载超时'));
-          }
-        }, 10000);
-      });
-    }
-
-    // 渲染图片列表
-    function renderGallery() {
-      const gallery = document.getElementById('gallery');
-      gallery.innerHTML = currentFiltered.map((img, i) => `
-        <div class="img-card ${img.selected ? 'selected' : ''}">
-          <input type="checkbox" class="checkbox" ${img.selected ? 'checked' : ''} 
-                 onclick="event.stopPropagation(); toggleSelect(${i})">
-          ${img.error ? '<span class="error-badge">错误</span>' : ''}
-          <img src="${img.url}" alt="" onerror="this.onerror=null;this.src='data:image/svg+xml;utf8,<svg xmlns=\'http://www.w3.org/2000/svg\' width=\'100\' height=\'100\' viewBox=\'0 0 100 100\'><rect width=\'100\' height=\'100\' fill=\'%23f5f5f5\'/><text x=\'50\' y=\'50\' font-family=\'Arial\' font-size=\'14\' fill=\'%23666\' text-anchor=\'middle\' dominant-baseline=\'middle\'>图片加载失败</text></svg>'">
-          <div class="size-info">
-            ${img.width}x${img.height || '?'}
-          </div>
-          <div class="url-display" title="${img.url}">${img.url}</div>
-          <input type="text" class="url-edit" value="${img.url}" placeholder="修改图片URL">
-          <div class="url-actions">
-            <button class="success" onclick="updateImageUrl(${i}, this)">更新</button>
-            <button class="secondary" onclick="copyImageUrl(${i})">复制</button>
-          </div>
-          ${img.source ? `<div style="font-size:11px;color:#888;margin-top:5px;">来源: ${img.source}</div>` : ''}
-        </div>
-      `).join('');
-      
-      updateStats();
-    }
-
-    // 更新图片URL
-    function updateImageUrl(index, btn) {
-      const card = document.getElementById('gallery').children[index];
-      const newUrl = card.querySelector('.url-edit').value.trim();
-      
-      if (!newUrl) {
-        alert('请输入有效的URL');
-        return;
-      }
-      
-      btn.disabled = true;
-      btn.textContent = '更新中...';
-      
-      // 更新图片
-      const img = new Image();
-      img.onload = () => {
-        currentFiltered[index].url = newUrl;
-        currentFiltered[index].width = img.naturalWidth;
-        currentFiltered[index].height = img.naturalHeight;
-        currentFiltered[index].error = false;
-        
-        // 同步到allImages
-        const originalUrl = currentFiltered[index].originalUrl;
-        const imgInAll = allImages.find(img => img.originalUrl === originalUrl);
-        if (imgInAll) {
-          imgInAll.url = newUrl;
-          imgInAll.width = img.naturalWidth;
-          imgInAll.height = img.naturalHeight;
-          imgInAll.error = false;
+        if (startIndex !== -1) {
+          if (endIndex === -1) endIndex = img.url.length;
+          newUrl = img.url.substring(startIndex + startChar.length, endIndex);
         }
-        
-        renderGallery();
-      };
-      img.onerror = () => {
-        alert('新图片URL无效，无法加载');
-        btn.disabled = false;
-        btn.textContent = '更新';
-      };
-      img.src = newUrl;
-    }
-
-    // 复制图片URL
-    function copyImageUrl(index) {
-      const url = currentFiltered[index].url;
-      navigator.clipboard.writeText(url).then(() => {
-        const btn = document.getElementById('gallery').children[index].querySelector('.url-actions button:nth-child(2)');
-        const originalText = btn.textContent;
-        btn.textContent = '已复制!';
-        setTimeout(() => {
-          btn.textContent = originalText;
-        }, 2000);
-      }).catch(err => {
-        console.error('复制失败:', err);
-      });
-    }
-
-    // 应用筛选
-    function applyFilter() {
-      const minW = parseInt(document.getElementById('minWidth').value) || 0;
-      const minH = parseInt(document.getElementById('minHeight').value) || 0;
-      
-      currentFiltered = allImages.filter(img => 
-        img.width >= minW && img.height >= minH
-      );
-      renderGallery();
-    }
-
-    // 选择操作
-    function toggleSelect(index) {
-      currentFiltered[index].selected = !currentFiltered[index].selected;
-      
-      // 同步到allImages
-      const originalUrl = currentFiltered[index].originalUrl;
-      const img = allImages.find(img => img.originalUrl === originalUrl);
-      if (img) img.selected = currentFiltered[index].selected;
-      
-      renderGallery();
-    }
-
-    function selectAll() {
-      currentFiltered.forEach(img => img.selected = true);
-      allImages.forEach(img => {
-        if (currentFiltered.some(f => f.originalUrl === img.originalUrl)) img.selected = true;
-      });
-      renderGallery();
-    }
-
-    function deselectAll() {
-      currentFiltered.forEach(img => img.selected = false);
-      allImages.forEach(img => {
-        if (currentFiltered.some(f => f.originalUrl === img.originalUrl)) img.selected = false;
-      });
-      renderGallery();
-    }
-
-    // 删除选中
-    function deleteSelected() {
-      const selected = currentFiltered.filter(img => img.selected).map(img => img.originalUrl);
-      if (selected.length === 0) return alert('请先选择图片');
-      
-      if (!confirm(`确定删除 ${selected.length} 张图片吗？`)) return;
-      
-      allImages = allImages.filter(img => !selected.includes(img.originalUrl));
-      applyFilter();
-    }
-
-    // 复制结果
-    function copyResults() {
-      const urls = currentFiltered.map(img => img.url);
-      if (urls.length === 0) return alert('没有可复制的图片');
-      
-      navigator.clipboard.writeText(urls.join('\n')).then(() => {
-        alert(`已复制 ${urls.length} 个图片链接`);
-      }).catch(err => {
-        alert('复制失败: ' + err);
-      });
-    }
-
-    // 批量替换URL
-    function batchReplaceUrl() {
-      const findText = document.getElementById('batchFind').value.trim();
-      const replaceText = document.getElementById('batchReplace').value;
-      
-      if (!findText) {
-        alert('请输入查找内容');
-        return;
-      }
-      
-      const selected = currentFiltered.filter(img => img.selected);
-      if (selected.length === 0) {
-        alert('请先选择图片');
-        return;
-      }
-      
-      let regex;
-      try {
-        // 尝试解析为正则表达式
-        const patternMatch = findText.match(/^\/(.*)\/([gimuy]*)$/);
-        if (patternMatch) {
-          regex = new RegExp(patternMatch[1], patternMatch[2]);
-        } else {
-          regex = new RegExp(escapeRegExp(findText), 'g');
+      } 
+      // 其他自定义模式
+      else {
+        const match = img.url.match(new RegExp(pattern));
+        if (match && match[1]) {
+          newUrl = match[1];
         }
-      } catch (e) {
-        alert('无效的正则表达式: ' + e.message);
-        return;
       }
       
-      selected.forEach(img => {
-        img.url = img.url.replace(regex, replaceText);
+      if (newUrl) {
+        img.url = newUrl;
         
         // 同步到allImages
         const imgInAll = allImages.find(i => i.originalUrl === img.originalUrl);
-        if (imgInAll) imgInAll.url = img.url;
-      });
-      
-      renderGallery();
-    }
-    
-    // 批量提取URL部分
-    function batchExtractUrl() {
-      const pattern = document.getElementById('batchPattern').value.trim();
-      
-      if (!pattern) {
-        alert('请输入提取模式');
-        return;
+        if (imgInAll) imgInAll.url = newUrl;
       }
-      
-      const selected = currentFiltered.filter(img => img.selected);
-      if (selected.length === 0) {
-        alert('请先选择图片');
-        return;
-      }
-      
-      selected.forEach(img => {
-        try {
-          let newUrl = '';
-          
-          // 处理"=到?之间的内容"这种模式
-          if (pattern.includes('到')) {
-            const [startChar, endChar] = pattern.split('到').map(s => s.trim());
-            const startIndex = img.url.indexOf(startChar);
-            let endIndex = img.url.indexOf(endChar, startIndex + 1);
-            
-            if (startIndex !== -1) {
-              if (endIndex === -1) endIndex = img.url.length;
-              newUrl = img.url.substring(startIndex + startChar.length, endIndex);
-            }
-          } 
-          // 其他自定义模式
-          else {
-            const match = img.url.match(new RegExp(pattern));
-            if (match && match[1]) {
-              newUrl = match[1];
-            }
-          }
-          
-          if (newUrl) {
-            img.url = newUrl;
-            
-            // 同步到allImages
-            const imgInAll = allImages.find(i => i.originalUrl === img.originalUrl);
-            if (imgInAll) imgInAll.url = newUrl;
-          }
-        } catch (e) {
-          console.error('提取失败:', img.url, e);
-        }
-      });
-      
-      renderGallery();
+    } catch (e) {
+      console.error('提取失败:', img.url, e);
     }
+  });
+  
+  renderGallery();
+}
+
+// 批量添加前缀后缀
+function batchAddFix() {
+  const prefix = document.getElementById('batchPrefix').value.trim();
+  const suffix = document.getElementById('batchSuffix').value.trim();
+  
+  const selected = currentFiltered.filter(img => img.selected);
+  if (selected.length === 0) {
+    alert('请先选择图片');
+    return;
+  }
+  
+  selected.forEach(img => {
+    img.url = prefix + img.url + suffix;
     
-    // 批量添加前缀后缀
-    function batchAddFix() {
-      const prefix = document.getElementById('batchPrefix').value.trim();
-      const suffix = document.getElementById('batchSuffix').value.trim();
-      
-      const selected = currentFiltered.filter(img => img.selected);
-      if (selected.length === 0) {
-        alert('请先选择图片');
-        return;
-      }
-      
-      selected.forEach(img => {
-        img.url = prefix + img.url + suffix;
-        
-        // 同步到allImages
-        const imgInAll = allImages.find(i => i.originalUrl === img.originalUrl);
-        if (imgInAll) imgInAll.url = img.url;
-      });
-      
-      renderGallery();
-    }
-    
-    // 转义正则表达式特殊字符
-    function escapeRegExp(string) {
-      return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    }
+    // 同步到allImages
+    const imgInAll = allImages.find(i => i.originalUrl === img.originalUrl);
+    if (imgInAll) imgInAll.url = img.url;
+  });
+  
+  renderGallery();
+}
 
-    // 更新统计
-    function updateStats() {
-      const total = allImages.length;
-      const visible = currentFiltered.length;
-      const selected = currentFiltered.filter(img => img.selected).length;
-      
-      document.getElementById('stats').innerHTML = `
-        <span>总图片数: ${total}</span>
-        <span>符合条件: ${visible}</span>
-        <span>选中: ${selected}</span>
-      `;
-    }
+// 转义正则表达式特殊字符
+function escapeRegExp(string) {
+  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
 
-    // 加载状态控制
-    function startLoading(text) {
-      isLoading = true;
-      document.getElementById('loadingText').textContent = text || '加载中...';
-      document.getElementById('loadingOverlay').style.display = 'flex';
-    }
+// 更新统计
+function updateStats() {
+  const total = allImages.length;
+  const visible = currentFiltered.length;
+  const selected = currentFiltered.filter(img => img.selected).length;
+  
+  document.getElementById('stats').innerHTML = `
+    <span>总图片数: ${total}</span>
+    <span>符合条件: ${visible}</span>
+    <span>选中: ${selected}</span>
+  `;
+}
 
-    function endLoading() {
-      isLoading = false;
-      document.getElementById('loadingOverlay').style.display = 'none';
-    }
+// 加载状态控制
+function startLoading(text) {
+  isLoading = true;
+  document.getElementById('loadingText').textContent = text || '加载中...';
+  document.getElementById('loadingOverlay').style.display = 'flex';
+}
 
-    function cancelLoading() {
-      isLoading = false;
-      document.getElementById('loadingOverlay').style.display = 'none';
-    }
+function endLoading() {
+  isLoading = false;
+  document.getElementById('loadingOverlay').style.display = 'none';
+}
 
-    function updateProgress(current, total) {
-      const percent = Math.round((current / total) * 100);
-      document.getElementById('progressFill').style.width = `${percent}%`;
-      document.getElementById('progressText').textContent = `${current}/${total} (${percent}%)`;
-    }
+function cancelLoading() {
+  isLoading = false;
+  document.getElementById('loadingOverlay').style.display = 'none';
+}
+
+function updateProgress(current, total) {
+  const percent = Math.round((current / total) * 100);
+  document.getElementById('progressFill').style.width = `${percent}%`;
+  document.getElementById('progressText').textContent = `${current}/${total} (${percent}%)`;
+}
   </script>
 
 </body>
