@@ -1112,5 +1112,49 @@ function updateProgress(current, total) {
 }
   </script>
 
+
+
+  <script>
+// 确保DOM完全加载后再执行
+document.addEventListener('DOMContentLoaded', function() {
+  const themeSwitcher = document.getElementById('themeSwitcher');
+  const htmlElement = document.documentElement;
+  
+  // 初始化检查
+  function initTheme() {
+    const darkMode = localStorage.getItem('darkMode');
+    if (darkMode === 'enabled') {
+      htmlElement.classList.add('dark-mode');
+      themeSwitcher.innerHTML = '<i class="fas fa-sun"></i>';
+    } else {
+      htmlElement.classList.remove('dark-mode');
+      themeSwitcher.innerHTML = '<i class="fas fa-moon"></i>';
+    }
+  }
+  
+  // 初始化主题
+  initTheme();
+  
+  // 切换主题函数
+  function toggleTheme() {
+    if (htmlElement.classList.contains('dark-mode')) {
+      localStorage.setItem('darkMode', 'disabled');
+      htmlElement.classList.remove('dark-mode');
+      themeSwitcher.innerHTML = '<i class="fas fa-moon"></i>';
+    } else {
+      localStorage.setItem('darkMode', 'enabled');
+      htmlElement.classList.add('dark-mode');
+      themeSwitcher.innerHTML = '<i class="fas fa-sun"></i>';
+    }
+  }
+  
+  // 添加点击事件监听
+  themeSwitcher.addEventListener('click', toggleTheme);
+  
+  // 调试用：检查是否绑定了事件
+  console.log('Theme switcher event listener added:', themeSwitcher);
+});
+</script>
+
 </body>
 </html>
