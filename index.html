@@ -450,6 +450,14 @@ input[type="number"] {
   --input-bg: #252525;
   --text-color: #e0e0e0;
 }
+
+    .selection-box {
+  position: absolute;
+  border: 2px dashed var(--primary-color);
+  background: rgba(44, 62, 80, 0.1);
+  pointer-events: none;
+  z-index: 10;
+}
 </style>
 
   <!-- 引入Font Awesome图标 -->
@@ -1170,6 +1178,94 @@ document.addEventListener('DOMContentLoaded', function() {
   console.log('Theme switcher event listener added:', themeSwitcher);
 });
 </script>
+<style>
+  // 框选功能变量
+let isSelecting = false;
+let startX, startY;
+let selectionBox = null;
 
+// 创建框选元素
+function createSelectionBox() {
+  selectionBox = document.createElement('div');
+  selectionBox.className = 'selection-box';
+  document.body.appendChild(selectionBox);
+}
+
+// 初始化框选功能
+function initBoxSelection() {
+  const gallery = document.getElementById('gallery');
+  
+  gallery.addEventListener('mousedown', (e) => {
+    if (e.target === gallery) {
+      isSelecting = true;
+      startX = e.clientX;
+      startY = e.clientY;
+      createSelectionBox();
+      selectionBox.style.left = `${startX}px`;
+      selectionBox.style.top = `${startY}px`;
+      selectionBox.style.width = '0';
+      selectionBox.style.height = '0';
+    }
+  });
+  
+  document.addEventListener('mousemove', (e) => {
+    if (!isSelecting) return;
+    
+    const currentX = e.clientX;
+    const currentY = e.clientY;
+    
+    selectionBox.style.left = `${Math.min(startX, currentX)}px`;
+    selectionBox.style.top = `${Math.min(startY, currentY)}px`;
+    selectionBox.style.width = `${Math.abs(currentX - startX)}px`;
+    selectionBox.style.height = `${Math.abs(currentY - startY)}px`;
+    
+    // 高亮被框选的图片
+    highlightSelectedImages();
+  });
+  
+  document.addEventListener('mouseup', () => {
+    if (isSelecting) {
+      isSelecting = false;
+      if (selectionBox) {
+        selectionBox.remove();
+        selectionBox = null;
+      }
+    }
+  });
+}
+
+// 高亮被框选的图片
+function highlightSelectedImages() {
+  if (!selectionBox) return;
+  
+  const rect = selectionBox.getBoundingClientRect();
+  const galleryItems = document.querySelectorAll('.img-card');
+  
+  galleryItems.forEach((item, index) => {
+    const itemRect = item.getBoundingClientRect();
+    const isOverlapping = !(
+      rect.right < itemRect.left || 
+      rect.left > itemRect.right || 
+      rect.bottom < itemRect.top || 
+      rect.top > itemRect.bottom
+    );
+    
+    if (isOverlapping) {
+      currentFiltered[index].selected = true;
+      // 同步到allImages
+      const originalUrl = currentFiltered[index].originalUrl;
+      const img = allImages.find(img => img.originalUrl === originalUrl);
+      if (img) img.selected = true;
+    }
+  });
+  
+  renderGallery();
+}
+
+// 在DOM加载完成后初始化
+document.addEventListener('DOMContentLoaded', () => {
+  initBoxSelection();
+});
+  </style>
 </body>
 </html>
