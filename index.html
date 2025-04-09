@@ -355,6 +355,76 @@
     <button onclick="cancelLoading()" class="danger" style="margin-top: 15px;">取消</button>
   </div>
 
+
+
+  <script>
+    // 提取图片链接
+    function extractImageLinks() {
+      const text = document.getElementById('htmlInput').value;
+      if (!text) {
+        alert('请输入内容');
+        return;
+      }
+      
+      startLoading('提取图片链接中...');
+      
+      try {
+        // 匹配常见的图片URL格式
+        const imageRegex = /(https?:\/\/[^\s"'<>]+?\.(?:jpg|jpeg|png|gif|webp|bmp|svg|ico)(?:\?\S*)?)/gi;
+        const matches = text.match(imageRegex) || [];
+        
+        // 去重
+        const uniqueUrls = [...new Set(matches)];
+        
+        if (uniqueUrls.length === 0) {
+          throw new Error('未找到图片链接');
+        }
+        
+        // 清空现有图片
+        allImages = [];
+        currentFiltered = [];
+        document.getElementById('gallery').innerHTML = '';
+        
+        // 加载图片获取尺寸
+        updateProgress(0, uniqueUrls.length);
+        return Promise.all(uniqueUrls.map((url, i) => {
+          return loadImage(url).then(imgData => {
+            allImages.push({
+              url: url,
+              originalUrl: url,
+              source: '提取的链接',
+              width: imgData.width,
+              height: imgData.height,
+              selected: false,
+              error: false
+            });
+            updateProgress(i + 1, uniqueUrls.length);
+          }).catch(error => {
+            console.error('加载图片失败:', url, error);
+            allImages.push({
+              url: url,
+              originalUrl: url,
+              source: '提取的链接',
+              width: 0,
+              height: 0,
+              selected: false,
+              error: true
+            });
+            updateProgress(i + 1, uniqueUrls.length);
+          });
+        }).then(() => {
+          currentFiltered = [...allImages];
+          renderGallery();
+        });
+      } catch (error) {
+        alert('提取失败: ' + error.message);
+      } finally {
+        endLoading();
+      }
+    }
+    
+  </script>
+  
   <script>
     let allImages = [];
     let currentFiltered = [];
@@ -847,72 +917,5 @@
     }
   </script>
 
-  <script>
-    // 提取图片链接
-    function extractImageLinks() {
-      const text = document.getElementById('htmlInput').value;
-      if (!text) {
-        alert('请输入内容');
-        return;
-      }
-      
-      startLoading('提取图片链接中...');
-      
-      try {
-        // 匹配常见的图片URL格式
-        const imageRegex = /(https?:\/\/[^\s"'<>]+?\.(?:jpg|jpeg|png|gif|webp|bmp|svg|ico)(?:\?\S*)?)/gi;
-        const matches = text.match(imageRegex) || [];
-        
-        // 去重
-        const uniqueUrls = [...new Set(matches)];
-        
-        if (uniqueUrls.length === 0) {
-          throw new Error('未找到图片链接');
-        }
-        
-        // 清空现有图片
-        allImages = [];
-        currentFiltered = [];
-        document.getElementById('gallery').innerHTML = '';
-        
-        // 加载图片获取尺寸
-        updateProgress(0, uniqueUrls.length);
-        return Promise.all(uniqueUrls.map((url, i) => {
-          return loadImage(url).then(imgData => {
-            allImages.push({
-              url: url,
-              originalUrl: url,
-              source: '提取的链接',
-              width: imgData.width,
-              height: imgData.height,
-              selected: false,
-              error: false
-            });
-            updateProgress(i + 1, uniqueUrls.length);
-          }).catch(error => {
-            console.error('加载图片失败:', url, error);
-            allImages.push({
-              url: url,
-              originalUrl: url,
-              source: '提取的链接',
-              width: 0,
-              height: 0,
-              selected: false,
-              error: true
-            });
-            updateProgress(i + 1, uniqueUrls.length);
-          });
-        }).then(() => {
-          currentFiltered = [...allImages];
-          renderGallery();
-        });
-      } catch (error) {
-        alert('提取失败: ' + error.message);
-      } finally {
-        endLoading();
-      }
-    }
-    
-  </script>
 </body>
 </html>
